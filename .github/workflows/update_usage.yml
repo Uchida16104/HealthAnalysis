@@ -1,0 +1,32 @@
+name: Update Usage Data
+on:
+  schedule:
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with: python-version: '3.x'
+      - name: Install dependencies
+        run: pip install requests
+      - name: Fetch usage data
+        env:
+          RESCUETIME_API_KEY: ${{ secrets.RESCUETIME_API_KEY }}
+        run: python scripts/fetch_usage.py
+      - name: Commit updated data and HTML
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions[bot]
+          author_email: github-actions[bot]@users.noreply.github.com
+          message: "Update usage data for ${{ steps.fetch.outputs.date }}"
+          add: |
+            data/usage.json
+            index.html
