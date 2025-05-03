@@ -1,7 +1,7 @@
 import os, requests, json
 from datetime import datetime, timedelta
 
-API_KEY = os.environ['RESCUETIME_API_KEY']
+API_KEY = os.environ['B63RkBQOBjasyXEHrHojug50a1BBz_td41jTPXr9']
 
 yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 
