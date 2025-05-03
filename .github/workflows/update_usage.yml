@@ -21,8 +21,8 @@ jobs:
       - name: Fetch usage data
         env:
           RESCUETIME_API_KEY_MACOS: ${{ secrets.RESCUETIME_API_KEY_MACOS }}
-          RESCUETIME_API_KEY_IPAD:    ${{ secrets.RESCUETIME_API_KEY_IPAD }}
-          RESCUETIME_API_KEY_PIXEL9:  ${{ secrets.RESCUETIME_API_KEY_PIXEL9 }}
+          RESCUETIME_API_KEY_IPAD: ${{ secrets.RESCUETIME_API_KEY_IPAD }}
+          RESCUETIME_API_KEY_PIXEL9: ${{ secrets.RESCUETIME_API_KEY_PIXEL9 }}
         run: python scripts/fetch_usage.py
       - name: Commit updated data and HTML
         uses: EndBug/add-and-commit@v9
