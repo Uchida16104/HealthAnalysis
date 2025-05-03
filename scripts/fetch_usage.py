@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 API_KEY_MACOS   = os.environ['B63RkBQOBjasyXEHrHojug50a1BBz_td41jTPXr9']
 API_KEY_IPAD    = os.environ['RESCUETIME_API_KEY_IPAD']
-API_KEY_PIXEL9  = os.environ['RESCUETIME_API_KEY_PIXEL9']
+API_KEY_PIXEL9  = os.environ['B63PkOOydh6G0FU2MkUeAcNuP6MQX4Q22Tqn56Fa']
 
 yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 
