@@ -20,16 +20,16 @@ data_ipad   = fetch_summary(API_KEY_IPAD)
 data_pixel9 = fetch_summary(API_KEY_PIXEL9)
 
 def extract_summary(data, date_str):
-    return next(item for item in data if item['date'] == date_str)
+    return next((item for item in data if item['date'] == date_str), None)
 
-summary_macos  = extract_summary(data_macos, yesterday)
-summary_ipad   = extract_summary(data_ipad, yesterday)
-summary_pixel9 = extract_summary(data_pixel9, yesterday)
+summary_macos  = extract_summary(data_macos, yesterday)  or {}
+summary_ipad   = extract_summary(data_ipad, yesterday)   or {}
+summary_pixel9 = extract_summary(data_pixel9, yesterday) or {}
 
 devices = {
-    'macOS':  summary_macos.get('software_development_percentage'),
-    'iPad':   summary_ipad.get('communication_and_scheduling_percentage'),
-    'Pixel9': summary_pixel9.get('social_networking_percentage')
+    'macOS':  summary_macos.get('software_development_percentage', 0),
+    'iPad':   summary_ipad.get('communication_and_scheduling_percentage', 0),
+    'Pixel9': summary_pixel9.get('social_networking_percentage', 0)
 }
 
 os.makedirs('data', exist_ok=True)
