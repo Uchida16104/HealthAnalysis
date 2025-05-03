@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HealthAnalysis</title>
+</head>
+<body>
+  <canvas id="usageChart" width="800" height="400"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.js"></script> <!-- CDN 読込 :contentReference[oaicite:2]{index=2} -->
+  <script>
+    fetch('data/usage.json')
+      .then(res => res.json())
+      .then(d => {
+        const labels = [d.date];
+        const data = {
+          labels,
+          datasets: Object.entries(d.devices).map(([name, val]) => ({
+            label: name,
+            data: [val],
+            tension: 0.4
+          }))
+        };
+        new Chart(
+          document.getElementById('usageChart'),
+          { type: 'line', data }
+        );
+      });
+  </script>
+</body>
+</html>
