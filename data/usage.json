@@ -1,18 +1,8 @@
-[
-  {
-    "date": "2025-05-03",
-    "devices": {
-      "macOS": 0.0,
-      "iPad": 1.2,
-      "Pixel9": 4.6
-    }
-  },
-  {
-    "date": "2025-05-03",
-    "devices": {
-      "macOS": 0.0,
-      "iPad": 1.2,
-      "Pixel9": 4.6
-    }
+{
+  "date": "2025-05-03",
+  "devices": {
+    "macOS": 0.0,
+    "iPad": 1.2,
+    "Pixel9": 4.6
   }
-]
+}
