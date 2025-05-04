@@ -1,8 +1,8 @@
 {
-  "date": "2025-05-02",
+  "date": "2025-05-03",
   "devices": {
-    "macOS": 0,
-    "iPad": 0,
-    "Pixel9": 0
+    "macOS": 0.0,
+    "iPad": 1.2,
+    "Pixel9": 4.6
   }
 }
