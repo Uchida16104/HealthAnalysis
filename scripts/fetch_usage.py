@@ -33,7 +33,16 @@ devices = {
 }
 
 os.makedirs('data', exist_ok=True)
-with open('data/usage.json', 'w') as f:
-    json.dump({'date': yesterday, 'devices': devices}, f, indent=2)
-
+history_path = 'data/usage.json'
+try:
+    with open(history_path, 'r') as f:
+        history = json.load(f)
+        if isinstance(history, dict):
+            history = [history]
+except (FileNotFoundError, json.JSONDecodeError):
+    history = []
+history.append({'date': yesterday, 'devices': devices})
+with open(history_path, 'w') as f:
+    json.dump(history, f, indent=2)
+    
 print(f"Saved usage data for {yesterday}: {devices}")
