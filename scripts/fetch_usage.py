@@ -41,7 +41,17 @@ try:
             history = [history]
 except (FileNotFoundError, json.JSONDecodeError):
     history = []
-history.append({'date': yesterday, 'devices': devices})
+
+if history:
+    prev = history[-1]['devices']
+    devices_today = {
+        name: devices.get(name, 0) - prev.get(name, 0)
+        for name in devices
+    }
+else:
+    devices_today = devices
+    
+history.append({'date': yesterday, 'devices': devices_today})
 with open(history_path, 'w') as f:
     json.dump(history, f, indent=2)
     
