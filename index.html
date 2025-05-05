@@ -13,19 +13,30 @@
   <script>
     fetch('data/usage.json')
       .then(res => res.json())
-      .then(d => {
-        const labels = [d.date];
-        const data = {
-          labels,
-          datasets: Object.entries(d.devices).map(([name, val]) => ({
-            label: name,
-            data: [val],
-            tension: 0.4
-          }))
-        };
+      .then(history => {
+        const labels = history.map(item => item.date);
+        const deviceNames = Object.keys(history[0]?.devices || {});
+        const datasets = deviceNames.map(name => ({
+          label: name,
+          data: history.map(item => item.devices[name] || 0),
+          fill: false,
+          tension: 0.1
+        }));
+        const data = { labels, datasets };
         new Chart(
           document.getElementById('usageChart'),
-          { type: 'line', data }
+          {
+            type: 'line',
+            data,
+            options: {
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Device Usage Over Time'
+                }
+              }
+            }
+          }
         );
       });
   </script>
