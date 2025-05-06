@@ -25,12 +25,19 @@
 
         const labels = history.map(item => item.date);
         const deviceNames = Object.keys(history[0]?.devices || {});
+
+        const colors = {
+          macOS:  'rgba(255, 99, 132, 1)',
+          iPad:   'rgba(54, 162, 235, 1)',
+          Pixel9: 'rgba(255, 206, 86, 1)'
+        };
         
         const datasets = deviceNames.map(name => ({
           label: name,
           data: history.map(item => item.devices[name] || 0),
           fill: false,
-          borderColor: 'rgb(75, 192, 192)',
+          borderColor: colors[name] || 'rgba(75, 192, 192, 1)',
+          backgroundColor: (colors[name] || 'rgba(75,192,192,1)').replace(', 1)', ', 0.2)'), 
           tension: 0.1
         }));
 
