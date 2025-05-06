@@ -61,68 +61,50 @@
     fetch('data/usage.json')
       .then(res => res.json())
       .then(raw => {
-        const uniqueMap = raw.reduce((acc, item) => {
-          acc[item.date] = item;
+        
+        const uniqueMap = raw.reduce((acc, item) => { acc[item.date] = item; return acc; }, {});
+        const history = Object.values(uniqueMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const deviceNames = Object.keys(history[0]?.devices || {});
+        const totals = deviceNames.reduce((acc, name) => {
+          acc[name] = history.reduce((sum, item) => sum + (item.devices[name] || 0), 0);
           return acc;
         }, {});
-        const history = Object.values(uniqueMap)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        const first = history[0].devices;
-        const last  = history[history.length - 1].devices;
 
-        const usage = Object.keys(last).map(name =>
-          Math.max(last[name] - (first[name] || 0), 0)
-        );
+        const grandTotal = Object.values(totals).reduce((a, b) => a + b, 0);
 
-        const labels = Object.keys(last);
-
-        const data = {
-          labels,
+        const doughnutData = {
+          labels: deviceNames,
           datasets: [{
-            label: 'Usage Rate',
-            data: usage,
+            label: 'Usage Rate %',
+            data: deviceNames.map(name => grandTotal ? (totals[name] / grandTotal * 100).toFixed(3) : 0),
             backgroundColor: [
-              'rgba(255, 99, 132, 0.6)',
-              'rgba(54, 162, 235, 0.6)',
-              'rgba(255, 206, 86, 0.6)'
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 206, 86, 0.8)'
             ],
-            borderColor: [
-              'rgba(255, 99, 132, 1)',
-              'rgba(54, 162, 235, 1)',
-              'rgba(255, 206, 86, 1)'
-            ],
-            borderWidth: 1
+            hoverOffset: 30
           }]
         };
 
-        new Chart(
-          document.getElementById('usageDoughnut'),
-          {
-            type: 'doughnut',
-            data,
-            options: {
-              plugins: {
-                title: {
-                  display: true,
-                  text: 'Device Usage Distribution'
-                },
-                tooltip: {
-                  callbacks: {
-                    label: (ctx) => {
-                      const total = usage.reduce((a, b) => a + b, 0);
-                      const value = usage[ctx.dataIndex];
-                      const pct = total ? (value / total * 100).toFixed(1) : 0;
-                      return `${ctx.label}: ${pct}% (${value})`;
-                    }
-                  }
-                }
+        const doughnutConfig = {
+          type: 'doughnut',
+          data: doughnutData,
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'right' },
+              title: {
+                display: true,
+                text: 'Device Usage Rate (%)'
               }
             }
           }
-        );
+        };
+
+        new Chart(document.getElementById('usageDoughnut'), doughnutConfig);
       });
-</script>
+  </script>
   <p><a href="https://github.com/Uchida16104/HealthAnalysis">Repository</a></p>
   <p>by <a href="https://hirotoshiuchida.glitch.me">Hirotoshi Uchida</a></p>
 </body>
