@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title>HealthAnalysis</title>
+  <style>
+    background: black;
+    color: white;
+  </style>
 </head>
 <body>
   <h1>HealthAnalysis</h1>
   <p>It abstracts the health status of each device from its usage time calculated from <a href="https://www.rescuetime.com/">RescueTime</a> and analyzes the data.</p>
   <h2></h2>
-  <canvas id="usageChart" width="800" height="400"></canvas>
+  <canvas id="usageChart" width="800" height="400" style="background: black;"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.js"></script>
   <script>
     fetch('data/usage.json')
