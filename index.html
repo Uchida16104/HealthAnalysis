@@ -105,6 +105,38 @@
         new Chart(document.getElementById('usageDoughnut'), doughnutConfig);
       });
   </script>
+  <script>
+    fetch('data/usage.json')
+      .then(res => res.json())
+      .then(raw => {
+        const uniqueMap = raw.reduce((acc, item) => { acc[item.date] = item; return acc; }, {});
+        const history = Object.values(uniqueMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const deviceNames = Object.keys(history[0]?.devices || {});
+        const avgs = {};
+        deviceNames.forEach(name => {
+          const sum = history.reduce((s, item) => s + (item.devices[name] || 0), 0);
+          avgs[name] = sum / history.length;
+        });
+
+        const thresholds = { macOS: 5, iPad: 2, Pixel9: 2 };
+
+        const container = document.createElement('div');
+        container.style.margin = '20px';
+
+        deviceNames.forEach(name => {
+          const avg = avgs[name];
+          const keep = avg <= thresholds[name];
+          const p = document.createElement('p');
+          p.textContent = `${name} Average: ${avg.toFixed(2)}h — ${keep ? 'Keep' : 'Over'}`;
+          p.style.color = keep ? '#36A2EB' : '#FF6384';  // 青か赤
+          p.style.fontSize = '1.2em';
+          container.appendChild(p);
+        });
+
+        document.body.appendChild(container);
+      });
+  </script>
   <p><a href="https://github.com/Uchida16104/HealthAnalysis">Repository</a></p>
   <p>by <a href="https://hirotoshiuchida.glitch.me">Hirotoshi Uchida</a></p>
 </body>
