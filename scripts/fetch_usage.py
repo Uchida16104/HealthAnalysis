@@ -42,17 +42,20 @@ try:
 except (FileNotFoundError, json.JSONDecodeError):
     history = []
 
+history = [h for h in history if h.get('date') != yesterday]
+
 if history:
-    prev = history[-1]['devices']
-    devices_today = {
-        name: devices.get(name, 0) - prev.get(name, 0)
+    base = history[0]['devices']
+    devices_independent = {
+        name: max(devices.get(name, 0) - base.get(name, 0), 0)
         for name in devices
     }
 else:
-    devices_today = devices
-    
-history.append({'date': yesterday, 'devices': devices_today})
+    devices_independent = devices
+
+history.append({'date': yesterday, 'devices': devices_independent})
+
 with open(history_path, 'w') as f:
     json.dump(history, f, indent=2)
-    
-print(f"Saved usage data for {yesterday}: {devices}")
+
+print(f"Saved usage data for {yesterday}: {devices_independent}")
