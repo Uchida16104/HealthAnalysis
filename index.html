@@ -129,12 +129,14 @@
           const keep = avg <= thresholds[name];
           const p = document.createElement('p');
           p.textContent = `${name} Average: ${avg.toFixed(2)}h — ${keep ? 'Keep' : 'Over'}`;
-          p.style.color = keep ? '#36A2EB' : '#FF6384';  // 青か赤
+          p.style.color = keep ? '#36A2EB' : '#FF6384';
           p.style.fontSize = '1.2em';
           container.appendChild(p);
         });
 
         document.body.appendChild(container);
+        const anchor = document.querySelector('h2');
+        anchor.parentNode.insertBefore(container, anchor.nextSibling);
       });
   </script>
   <p><a href="https://github.com/Uchida16104/HealthAnalysis">Repository</a></p>
