@@ -122,7 +122,7 @@
         const thresholds = { macOS: 5, iPad: 2, Pixel9: 2 };
 
         const container = document.createElement('div');
-        container.style.margin = '20px';
+        container.style.margin = '0px';
 
         deviceNames.forEach(name => {
           const avg = avgs[name];
@@ -131,6 +131,7 @@
           p.textContent = `${name} Average: ${avg.toFixed(2)}h — ${keep ? 'Keep' : 'Over'}`;
           p.style.color = keep ? '#36A2EB' : '#FF6384';
           p.style.fontSize = '1.1em';
+          p.style.margin = '0px';
           container.appendChild(p);
         });
 
