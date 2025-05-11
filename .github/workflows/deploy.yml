@@ -22,8 +22,6 @@ jobs:
       - name: Inject auth token into HTML
         run: |
           sed -i 's|__AUTH_TOKEN__|'"$AUTH_TOKEN"'|' index.html
-      - name: Build static site
-        run: npm ci && npm run build
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
