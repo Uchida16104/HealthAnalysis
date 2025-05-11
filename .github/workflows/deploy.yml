@@ -3,9 +3,11 @@ on:
   push:
     branches:
       - main
+
 permissions:
   contents: write
   pages: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -17,11 +19,17 @@ jobs:
           USER: ${{ secrets.GHP_USER }}
           PASS: ${{ secrets.GHP_PASSWORD }}
         run: |
-          TOKEN=$(printf '%s:%s' "$USER" "$PASS" | base64 | tr -d '\n')
+          TOKEN=$(printf '%s:%s' "$USER" "$PASS" \
+            | base64 \
+            | tr -d '\n' \
+            | tr -d '\r' \
+            | tr -d '[:space:]')
           echo "AUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
       - name: Inject auth token into HTML
         run: |
-          sed -i "s|__AUTH_TOKEN__|${AUTH_TOKEN}|g" index.html
+          sed -i "s|__AUTH_TOKEN__|\"${AUTH_TOKEN}\"|g" index.html
+      - name: Dump index.html head for verification
+        run: head -n 3 index.html
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
