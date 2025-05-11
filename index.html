@@ -16,11 +16,11 @@
          const users = JSON.parse(localStorage.getItem('users')) || [];
          const user = users.find(user => user.username === username && user.password === password);
          if (user) {
-             alert('Authentication succeeded!');
+             alert('Succeeded!');
              window.location.href = '/';
            } else {
-             alert('Authentication failed.');
-             window.location.href = 'http://hirotoshiuchida.glitch.me/';
+             alert('Failed.');
+             window.location.href = './manage.html';
            }
        }
     function checkAuthStatus() {
