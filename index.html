@@ -16,10 +16,12 @@
          const users = JSON.parse(localStorage.getItem('users')) || [];
          const user = users.find(user => user.username === username && user.password === password);
          if (user) {
+           　localStorage.setItem('isAuthenticated', 'true');
              alert('Succeeded!');
              window.location.href = 'https://uchida16104.github.io/HealthAnalysis';
            } else {
              alert('Failed.');
+             localStorage.removeItem('isAuthenticated');
              window.location.href = 'https://uchida16104.github.io/HealthAnalysis/manage.html';
            }
        }
@@ -32,9 +34,7 @@
     function markAuthenticated() {
         localStorage.setItem('isAuthenticated', 'true');
       }
-    window.onload = () => {
-      checkAuthStatus();
-    };
+    window.addEventListener('DOMContentLoaded', checkAuthStatus);
 </script>
 </head>
 <body>
