@@ -9,20 +9,6 @@
       color: white;
     }
   </style>
-  <script>
-    const AUTH_TOKEN = "__AUTH_TOKEN__";
-    (function() {
-      const user = prompt("Username:");
-      if (!user) location.href = "https://github.com";
-      const pass = prompt("Password:");
-      if (!pass) location.href = "https://github.com";
-      const inputToken = btoa(`${user}:${pass}`); 
-      if (inputToken !== AUTH_TOKEN) {
-        alert("Failed");
-        location.href = "https://github.com";
-      }
-    })();
-  </script>
 </head>
 <body>
   <h1>HealthAnalysis</h1>
