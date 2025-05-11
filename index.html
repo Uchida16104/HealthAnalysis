@@ -9,7 +9,6 @@
     button { margin: 0.5rem 0; }
   </style>
   <script>
-    // Authentication functions
     function authenticate() {
       const username = prompt('Username:');
       const password = prompt('Password:');
@@ -28,8 +27,6 @@
       document.getElementById('mainSection').style.display = auth ? 'block' : 'none';
       document.getElementById('managementSection').style.display = auth ? 'none' : 'block';
     }
-
-    // User management functions
     function addUser(e) {
       e.preventDefault();
       const username = document.getElementById('newUsername').value;
@@ -59,7 +56,6 @@
       localStorage.setItem('users', JSON.stringify(users));
       renderUserList();
     }
-
     window.addEventListener('DOMContentLoaded', () => {
       showSections();
       renderUserList();
@@ -67,7 +63,6 @@
   </script>
 </head>
 <body>
-  <!-- Management Section -->
   <div id="managementSection">
     <h1>User Control Panel</h1>
     <button onclick="authenticate()">Login to HealthAnalysis</button>
@@ -79,8 +74,6 @@
     <h2>Registered users list</h2>
     <ul id="userList"></ul>
   </div>
-
-  <!-- Main Section -->
   <div id="mainSection">
     <h1>HealthAnalysis</h1>
     <p>It abstracts the health status of each device from its usage time calculated from <a href="https://www.rescuetime.com/">RescueTime</a> and analyzes the data.</p>
@@ -100,13 +93,11 @@
         const ds=names.map(n=>({label:n,data:hist.map(i=>i.devices[n]||0),fill:false,
           borderColor:colors[n]||'rgba(75,192,192,1)',backgroundColor:(colors[n]||'rgba(75,192,192,1)').replace(',1)',',0.2)'),tension:0.1}));
         new Chart(document.getElementById('usageChart'),{type:'line',data:{labels,datasets:ds}});
-        // Doughnut
         const totals={};names.forEach(n=>{totals[n]=hist.reduce((s,i)=>(s+i.devices[n]||0),0);});
         const gt=Object.values(totals).reduce((a,b)=>a+b,0);
         const dd={labels:names,datasets:[{label:'Usage Rate %',data:names.map(n=>gt?(totals[n]/gt*100).toFixed(3):0),
           backgroundColor:['rgba(255,99,132,0.8)','rgba(54,162,235,0.8)','rgba(255,206,86,0.8)'],hoverOffset:30}]};
         new Chart(document.getElementById('usageDoughnut'),{type:'doughnut',data:dd,options:{responsive:true,plugins:{legend:{position:'right'},title:{display:true,text:'Device Usage Rate (%)'}}}});
-        // Thresholds
         const avgs={};names.forEach(n=>{avgs[n]=hist.reduce((s,i)=>(s+i.devices[n]||0),0)/hist.length;});
         const thr={macOS:5,iPad:2,Pixel9:2};
         const container=document.getElementById('thresholdInfo');names.forEach(n=>{
