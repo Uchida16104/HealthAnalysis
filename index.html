@@ -4,170 +4,137 @@
   <meta charset="UTF-8">
   <title>HealthAnalysis</title>
   <style>
-    * {
-      background: black;
-      color: white;
-    }
+    * { background: black; color: white; }
+    .hidden { display: none; }
+    .section { padding: 1rem; }
   </style>
   <script>
+    // Authentication functions
     function authenticate() {
-         const username = prompt('Username:');
-         const password = prompt('Password:');
-         const users = JSON.parse(localStorage.getItem('users')) || [];
-         const user = users.find(user => user.username === username && user.password === password);
-         if (user) {
-           　localStorage.setItem('isAuthenticated', 'true');
-             alert('Succeeded!');
-             window.location.href = 'https://uchida16104.github.io/HealthAnalysis';
-           } else {
-             alert('Failed.');
-             localStorage.removeItem('isAuthenticated');
-             window.location.href = 'https://uchida16104.github.io/HealthAnalysis/manage.html';
-           }
-       }
-    function checkAuthStatus() {
-         const isAuthenticated = localStorage.getItem('isAuthenticated');
-         if (!isAuthenticated) {
-             authenticate();
-           }
-       }
-    function markAuthenticated() {
+      const username = prompt('Username:');
+      const password = prompt('Password:');
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const user = users.find(u => u.username === username && u.password === password);
+      if (user) {
         localStorage.setItem('isAuthenticated', 'true');
+        showSection('main');
+      } else {
+        alert('Failed.');
       }
-    window.addEventListener('DOMContentLoaded', checkAuthStatus);
-</script>
+    }
+    function checkAuthStatus() {
+      if (localStorage.getItem('isAuthenticated') === 'true') {
+        showSection('main');
+      } else {
+        authenticate();
+      }
+    }
+
+    // Section display helper
+    function showSection(id) {
+      ['login','main','manage'].forEach(sec => {
+        document.getElementById(sec + 'Section').classList.add('hidden');
+      });
+      document.getElementById(id + 'Section').classList.remove('hidden');
+    }
+
+    // User management
+    function addUser() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      if (username && password) {
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        users.push({ username, password });
+        localStorage.setItem('users', JSON.stringify(users));
+        renderUserList();
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+      } else {
+        alert('Please enter username and password.');
+      }
+    }
+    function deleteUser(index) {
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      users.splice(index, 1);
+      localStorage.setItem('users', JSON.stringify(users));
+      renderUserList();
+    }
+    function renderUserList() {
+      const users = JSON.parse(localStorage.getItem('users')) || [];
+      const list = document.getElementById('userList');
+      list.innerHTML = '';
+      users.forEach((u, i) => {
+        const li = document.createElement('li');
+        li.textContent = `username: ${u.username}, password: ${u.password}`;
+        const btn = document.createElement('button');
+        btn.textContent = 'delete'; btn.onclick = () => deleteUser(i);
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuthStatus();
+      renderUserList();
+      // Chart.js code for main content
+      fetch('data/usage.json')
+        .then(res => res.json())
+        .then(raw => {
+          // prepare line chart
+          const uniq = raw.reduce((a, i) => { a[i.date] = i; return a; }, {});
+          const hist = Object.values(uniq).sort((a,b)=>new Date(a.date)-new Date(b.date));
+          const labels = hist.map(i=>i.date);
+          const names = Object.keys(hist[0]?.devices||{});
+          const colors = { macOS:'rgba(255,99,132,1)', iPad:'rgba(54,162,235,1)', Pixel9:'rgba(255,206,86,1)' };
+          const datasets = names.map(n=>({ label:n, data:hist.map(i=>i.devices[n]||0), fill:false, borderColor:colors[n]||'rgba(75,192,192,1)', tension:0.1 }));
+          new Chart(document.getElementById('usageChart'),{ type:'line', data:{ labels, datasets } });
+          // doughnut
+          const totals = names.reduce((a,n)=>{ a[n]=hist.reduce((s,i)=>s+(i.devices[n]||0),0); return a; },{});
+          const grand = Object.values(totals).reduce((a,b)=>a+b,0);
+          const doughnutData = { labels:names, datasets:[{ data:names.map(n=>grand?((totals[n]/grand*100).toFixed(3)):0), backgroundColor: Object.values(colors), hoverOffset:30 }] };
+          new Chart(document.getElementById('usageDoughnut'),{ type:'doughnut', data:doughnutData, options:{ responsive:true, plugins:{ legend:{ position:'right' }, title:{ display:true,text:'Device Usage Rate (%)' } } } });
+          // averages
+          const thresholds={ macOS:5,iPad:2,Pixel9:2 };
+          names.forEach(n=>{
+            const avg = hist.reduce((s,i)=>s+(i.devices[n]||0),0)/hist.length;
+            const p=document.createElement('p');
+            p.textContent=`${n} Average: ${avg.toFixed(2)}h — ${avg<=thresholds[n]?'Keep':'Over'}`;
+            p.style.color=avg<=thresholds[n]?'#36A2EB':'#FF6384'; p.style.fontSize='14px';
+            document.getElementById('stats').appendChild(p);
+          });
+        });
+    });
+  </script>
 </head>
 <body>
-  <h1>HealthAnalysis</h1>
-  <p>It abstracts the health status of each device from its usage time calculated from <a href="https://www.rescuetime.com/">RescueTime</a> and analyzes the data.</p>
-  <h2></h2>
-  <canvas id="usageChart" width="800" height="400" style="background: black;"></canvas>
+  <!-- Login Placeholder, auto-prompted -->
+  <div id="loginSection" class="section hidden">
+    <p>Logging in...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div id="mainSection" class="section hidden">
+    <h1>HealthAnalysis</h1>
+    <p>Analyzes device health based on usage time from <a href="https://www.rescuetime.com/">RescueTime</a>.</p>
+    <canvas id="usageChart" width="800" height="400"></canvas>
+    <canvas id="usageDoughnut" width="400" height="400"></canvas>
+    <div id="stats"></div>
+    <button onclick="showSection('manage')">User Control Panel</button>
+  </div>
+
+  <!-- Management Panel -->
+  <div id="manageSection" class="section hidden">
+    <h1>User Control Panel</h1>
+    <button onclick="showSection('main')">Back to Analysis</button>
+    <form onsubmit="addUser(); return false;">
+      <label>username:<input type="text" id="username" required></label><br>
+      <label>password:<input type="password" id="password" required></label><br>
+      <button type="submit">Add user</button>
+    </form>
+    <h2>Registered users list</h2>
+    <ul id="userList"></ul>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.js"></script>
-  <script>
-    fetch('data/usage.json')
-      .then(res => res.json())
-      .then(raw => {
-        
-        const uniqueMap = raw.reduce((acc, item) => {
-          acc[item.date] = item;
-          return acc;
-        }, {});
-
-        const history = Object.values(uniqueMap)
-          .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        const labels = history.map(item => item.date);
-        const deviceNames = Object.keys(history[0]?.devices || {});
-
-        const colors = {
-          macOS:  'rgba(255, 99, 132, 1)',
-          iPad:   'rgba(54, 162, 235, 1)',
-          Pixel9: 'rgba(255, 206, 86, 1)'
-        };
-        
-        const datasets = deviceNames.map(name => ({
-          label: name,
-          data: history.map(item => item.devices[name] || 0),
-          fill: false,
-          borderColor: colors[name] || 'rgba(75, 192, 192, 1)',
-          backgroundColor: (colors[name] || 'rgba(75,192,192,1)').replace(', 1)', ', 0.2)'), 
-          tension: 0.1
-        }));
-
-        const data = { labels, datasets };
-        const config = { type: 'line', data };
-
-        new Chart(
-          document.getElementById('usageChart'),
-          config
-        );
-      });
-  </script>
-  <canvas id="usageDoughnut" width="400" height="400" style="background: black;"></canvas>
-  <script>
-    fetch('data/usage.json')
-      .then(res => res.json())
-      .then(raw => {
-        
-        const uniqueMap = raw.reduce((acc, item) => { acc[item.date] = item; return acc; }, {});
-        const history = Object.values(uniqueMap).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        const deviceNames = Object.keys(history[0]?.devices || {});
-        const totals = deviceNames.reduce((acc, name) => {
-          acc[name] = history.reduce((sum, item) => sum + (item.devices[name] || 0), 0);
-          return acc;
-        }, {});
-
-        const grandTotal = Object.values(totals).reduce((a, b) => a + b, 0);
-
-        const doughnutData = {
-          labels: deviceNames,
-          datasets: [{
-            label: 'Usage Rate %',
-            data: deviceNames.map(name => grandTotal ? (totals[name] / grandTotal * 100).toFixed(3) : 0),
-            backgroundColor: [
-              'rgba(255, 99, 132, 0.8)',
-              'rgba(54, 162, 235, 0.8)',
-              'rgba(255, 206, 86, 0.8)'
-            ],
-            hoverOffset: 30
-          }]
-        };
-
-        const doughnutConfig = {
-          type: 'doughnut',
-          data: doughnutData,
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { position: 'right' },
-              title: {
-                display: true,
-                text: 'Device Usage Rate (%)'
-              }
-            }
-          }
-        };
-
-        new Chart(document.getElementById('usageDoughnut'), doughnutConfig);
-      });
-  </script>
-  <script>
-    fetch('data/usage.json')
-      .then(res => res.json())
-      .then(raw => {
-        const uniqueMap = raw.reduce((acc, item) => { acc[item.date] = item; return acc; }, {});
-        const history = Object.values(uniqueMap).sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        const deviceNames = Object.keys(history[0]?.devices || {});
-        const avgs = {};
-        deviceNames.forEach(name => {
-          const sum = history.reduce((s, item) => s + (item.devices[name] || 0), 0);
-          avgs[name] = sum / history.length;
-        });
-
-        const thresholds = { macOS: 5, iPad: 2, Pixel9: 2 };
-
-        const container = document.createElement('div');
-        container.style.margin = '0px';
-
-        deviceNames.forEach(name => {
-          const avg = avgs[name];
-          const keep = avg <= thresholds[name];
-          const p = document.createElement('p');
-          p.textContent = `${name} Average: ${avg.toFixed(2)}h — ${keep ? 'Keep' : 'Over'}`;
-          p.style.color = keep ? '#36A2EB' : '#FF6384';
-          p.style.fontSize = '14px';
-          p.style.margin = '0px';
-          container.appendChild(p);
-        });
-
-        document.body.appendChild(container);
-        const anchor = document.querySelector('p');
-        anchor.parentNode.insertBefore(container, anchor.nextSibling);
-      });
-  </script>
-  <p><a href="https://github.com/Uchida16104/HealthAnalysis">Repository</a></p>
-  <p>by <a href="https://hirotoshiuchida.glitch.me">Hirotoshi Uchida</a></p>
 </body>
 </html>
