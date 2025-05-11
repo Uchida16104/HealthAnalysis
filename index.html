@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>HealthAnalysis</title>
+  <style>
+    * {
+      background: black;
+      color: white;
+    }
+  </style>
+  <script>
+    const AUTH_TOKEN = "InJvb3Q6cm9vdCI=";
+    (function() {
+      const user = prompt("Username:");
+      if (!user) location.href = "https://github.com";
+      const pass = prompt("Password:");
+      if (!pass) location.href = "https://github.com";
+      const inputToken = btoa(`${user}:${pass}`); 
+      if (inputToken !== AUTH_TOKEN) {
+        alert("Failed");
+        location.href = "https://github.com";
+      }
+    })();
+  </script>
+</head>
+<body>
+  <h1>HealthAnalysis</h1>
+  <p>It abstracts the health status of each device from its usage time calculated from <a href="https://www.rescuetime.com/">RescueTime</a> and analyzes the data.</p>
+  <h2></h2>
+  <canvas id="usageChart" width="800" height="400" style="background: black;"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.js"></script>
+  <script>
+    fetch('data/usage.json')
+      .then(res => res.json())
+      .then(raw => {
+        
+        const uniqueMap = raw.reduce((acc, item) => {
+          acc[item.date] = item;
+          return acc;
+        }, {});
+
+        const history = Object.values(uniqueMap)
+          .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const labels = history.map(item => item.date);
+        const deviceNames = Object.keys(history[0]?.devices || {});
+
+        const colors = {
+          macOS:  'rgba(255, 99, 132, 1)',
+          iPad:   'rgba(54, 162, 235, 1)',
+          Pixel9: 'rgba(255, 206, 86, 1)'
+        };
+        
+        const datasets = deviceNames.map(name => ({
+          label: name,
+          data: history.map(item => item.devices[name] || 0),
+          fill: false,
+          borderColor: colors[name] || 'rgba(75, 192, 192, 1)',
+          backgroundColor: (colors[name] || 'rgba(75,192,192,1)').replace(', 1)', ', 0.2)'), 
+          tension: 0.1
+        }));
+
+        const data = { labels, datasets };
+        const config = { type: 'line', data };
+
+        new Chart(
+          document.getElementById('usageChart'),
+          config
+        );
+      });
+  </script>
+  <canvas id="usageDoughnut" width="400" height="400" style="background: black;"></canvas>
+  <script>
+    fetch('data/usage.json')
+      .then(res => res.json())
+      .then(raw => {
+        
+        const uniqueMap = raw.reduce((acc, item) => { acc[item.date] = item; return acc; }, {});
+        const history = Object.values(uniqueMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const deviceNames = Object.keys(history[0]?.devices || {});
+        const totals = deviceNames.reduce((acc, name) => {
+          acc[name] = history.reduce((sum, item) => sum + (item.devices[name] || 0), 0);
+          return acc;
+        }, {});
+
+        const grandTotal = Object.values(totals).reduce((a, b) => a + b, 0);
+
+        const doughnutData = {
+          labels: deviceNames,
+          datasets: [{
+            label: 'Usage Rate %',
+            data: deviceNames.map(name => grandTotal ? (totals[name] / grandTotal * 100).toFixed(3) : 0),
+            backgroundColor: [
+              'rgba(255, 99, 132, 0.8)',
+              'rgba(54, 162, 235, 0.8)',
+              'rgba(255, 206, 86, 0.8)'
+            ],
+            hoverOffset: 30
+          }]
+        };
+
+        const doughnutConfig = {
+          type: 'doughnut',
+          data: doughnutData,
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'right' },
+              title: {
+                display: true,
+                text: 'Device Usage Rate (%)'
+              }
+            }
+          }
+        };
+
+        new Chart(document.getElementById('usageDoughnut'), doughnutConfig);
+      });
+  </script>
+  <script>
+    fetch('data/usage.json')
+      .then(res => res.json())
+      .then(raw => {
+        const uniqueMap = raw.reduce((acc, item) => { acc[item.date] = item; return acc; }, {});
+        const history = Object.values(uniqueMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        const deviceNames = Object.keys(history[0]?.devices || {});
+        const avgs = {};
+        deviceNames.forEach(name => {
+          const sum = history.reduce((s, item) => s + (item.devices[name] || 0), 0);
+          avgs[name] = sum / history.length;
+        });
+
+        const thresholds = { macOS: 5, iPad: 2, Pixel9: 2 };
+
+        const container = document.createElement('div');
+        container.style.margin = '0px';
+
+        deviceNames.forEach(name => {
+          const avg = avgs[name];
+          const keep = avg <= thresholds[name];
+          const p = document.createElement('p');
+          p.textContent = `${name} Average: ${avg.toFixed(2)}h — ${keep ? 'Keep' : 'Over'}`;
+          p.style.color = keep ? '#36A2EB' : '#FF6384';
+          p.style.fontSize = '14px';
+          p.style.margin = '0px';
+          container.appendChild(p);
+        });
+
+        document.body.appendChild(container);
+        const anchor = document.querySelector('p');
+        anchor.parentNode.insertBefore(container, anchor.nextSibling);
+      });
+  </script>
+  <p><a href="https://github.com/Uchida16104/HealthAnalysis">Repository</a></p>
+  <p>by <a href="https://hirotoshiuchida.glitch.me">Hirotoshi Uchida</a></p>
+</body>
+</html>
