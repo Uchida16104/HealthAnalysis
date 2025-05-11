@@ -27,8 +27,7 @@ jobs:
           echo "AUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
       - name: Inject auth token into HTML
         run: |
-          apt-get update && apt-get install -y dos2unix
-          dos2unix index.html
+          sed -i 's/\r$//' index.html
           sed -i "s|__AUTH_TOKEN__|\"${AUTH_TOKEN}\"|g" index.html
       - name: Verify token injection
         run: |
