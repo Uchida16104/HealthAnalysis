@@ -1,0 +1,25 @@
+name: Deploy to GitHub Pages
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Prepare auth token
+      env:
+        USER: ${{ secrets.GH_PAGES_USER }}
+        PASS: ${{ secrets.GH_PAGES_PASSWORD }}
+      run: |
+        echo "AUTH_TOKEN=$(echo -n \"$USER:$PASS\" | base64)" >> $GITHUB_ENV
+    - name: Inject auth token into HTML
+      run: |
+        sed -i 's|__AUTH_TOKEN__|'"$AUTH_TOKEN"'|' index.html
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
