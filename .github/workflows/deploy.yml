@@ -3,29 +3,27 @@ on:
   push:
     branches:
       - main
-
 permissions:
   contents: write
   pages: write
-
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Prepare auth token
-      env:
-        USER: ${{ secrets.GHP_USER }}
-        PASS: ${{ secrets.GHP_PASSWORD }}
-      run: |
-        TOKEN=$(printf '%s:%s' "$USER" "$PASS" | base64)
-        echo "AUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
-    - name: Inject auth token into HTML
-      run: |
-        sed -i 's|__AUTH_TOKEN__|'"$AUTH_TOKEN"'|' index.html
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Prepare auth token
+        env:
+          USER: ${{ secrets.GHP_USER }}
+          PASS: ${{ secrets.GHP_PASSWORD }}
+        run: |
+          TOKEN=$(printf '%s:%s' "$USER" "$PASS" | base64 | tr -d '\n')
+          echo "AUTH_TOKEN=$TOKEN" >> $GITHUB_ENV
+      - name: Inject auth token into HTML
+        run: |
+          sed -i "s|__AUTH_TOKEN__|${AUTH_TOKEN}|g" index.html
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
